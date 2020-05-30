@@ -43,6 +43,9 @@ class QuadEnv(gym.Env):
         done = False
         if any(pos < self.pos_lb) or any(pos > self.pos_ub):
             done = True
+        if any(np.isnan(state)) or np.isnan(rewards):
+            rewards = -500
+            done = True
         return state, rewards, done, {}
 
     def reset(self):
@@ -64,4 +67,4 @@ def test():
     print('it runs!')
     return
 
-test()
+# test()
