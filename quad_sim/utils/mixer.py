@@ -7,7 +7,7 @@ Please feel free to use and modify this, but keep the above information. Thanks!
 """
 
 import numpy as np
-import config
+import quad_sim.config as config
 
 
 def mixerFM(quad, thr, moment):

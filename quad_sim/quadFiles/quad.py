@@ -55,6 +55,35 @@ class Quadcopter:
         self.integrator.set_initial_value(self.state, Ti)
 
 
+    def reset(self, Ti):
+        ini_hover = init_cmd(self.params)
+        self.params["FF"] = ini_hover[0]  # Feed-Forward Command for Hover
+        self.params["w_hover"] = ini_hover[1]  # Motor Speed for Hover
+        self.params["thr_hover"] = ini_hover[2]  # Motor Thrust for Hover
+        self.thr = np.ones(4) * ini_hover[2]
+        self.tor = np.ones(4) * ini_hover[3]
+
+        self.state = init_state(self.params)
+
+        self.pos = self.state[0:3]
+        self.quat = self.state[3:7]
+        self.vel = self.state[7:10]
+        self.omega = self.state[10:13]
+        self.wMotor = np.array([self.state[13], self.state[15], self.state[17], self.state[19]])
+        self.vel_dot = np.zeros(3)
+        self.omega_dot = np.zeros(3)
+        self.acc = np.zeros(3)
+
+        self.extended_state()
+        self.forces()
+
+        # Set Integrator
+        # ---------------------------
+        self.integrator = ode(self.state_dot).set_integrator('dopri5', first_step='0.00005', atol='10e-6', rtol='10e-6')
+        self.integrator.set_initial_value(self.state, Ti)
+        return
+
+
     def extended_state(self):
 
         # Rotation Matrix of current state (Direct Cosine Matrix)
