@@ -10,9 +10,9 @@ import numpy as np
 from numpy import sin, cos, tan, pi, sign
 from scipy.integrate import ode
 
-from quadFiles.initQuad import sys_params, init_cmd, init_state
-import utils
-import config
+from quad_sim.quadFiles.initQuad import sys_params, init_cmd, init_state
+import quad_sim.utils as utils
+import quad_sim.config as config
 
 deg2rad = pi/180.0
 

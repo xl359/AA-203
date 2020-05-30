@@ -9,8 +9,8 @@ Please feel free to use and modify this, but keep the above information. Thanks!
 import numpy as np
 from numpy import pi
 from numpy.linalg import inv
-import utils
-import config
+import quad_sim.utils as utils
+import quad_sim.config as config
 
 
 def sys_params():

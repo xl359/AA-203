@@ -9,7 +9,7 @@ Please feel free to use and modify this, but keep the above information. Thanks!
 import numpy as np
 from numpy import sin, cos, pi
 import random as rd
-import config
+import quad_sim.config as config
 
 deg2rad = pi/180.0
 
