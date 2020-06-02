@@ -3,6 +3,8 @@ import gym
 import numpy as np
 from itertools import count
 from collections import namedtuple
+import logging
+import logging.handlers
 
 import torch
 import torch.nn as nn
@@ -23,7 +25,8 @@ args = easydict.EasyDict({
     "gamma": 0.99,
     "seed": 203,
     "render": False,
-    "log_interval": 10
+    "log_interval": 10,
+    "write_logger":True
 })
 
 # env = gym.make('LunarLanderContinuous-v2')
@@ -67,12 +70,15 @@ class Policy(nn.Module):
         # variance of action distribution (pass this through a non-negative function),
         # state value
 
+        input_x = x
         x = self.act1(self.affine1(x))
         x = self.act1(self.affine2(x))
         x = self.act1(self.affine3(x))
         action_mean = self.action_mean(x)
         action_var = F.softplus(self.action_var(x))
         state_values = self.value_head(x)  # <= Value Function not value of state
+        if any(torch.isnan(x)) or any(torch.isnan(action_mean)) or any(torch.isnan(action_var)):
+            print('NaN in forward pass')
 
         return 100.0 * action_mean, 100.0 * action_var, state_values
 
@@ -141,6 +147,8 @@ def finish_episode():
 
     # perform backprop
     loss.backward()
+    # gradient clipping to solve exploding gradient problem
+    torch.nn.utils.clip_grad_norm_(model.parameters(), 0.25)
     optimizer.step()
 
     # reset rewards and action buffer
@@ -149,6 +157,13 @@ def finish_episode():
 
 
 def main():
+    if args.write_logger:
+        log_filename = 'training_log.out'
+        train_logger = logging.getLogger('TrainLogger')
+        train_logger.setLevel(logging.DEBUG)
+        handler = logging.handlers.RotatingFileHandler(log_filename, maxBytes=10*1024*1024, backupCount=5)
+        train_logger.addHandler(handler)
+
     running_reward = -8000
 
     # run infinitely many episodes, until performance criteria met
@@ -171,6 +186,9 @@ def main():
 
             if args.render and i_episode % 100 == 0:
                 env.render()
+
+            if args.write_logger:
+                train_logger.debug('episode {0}, step {1}, state {2}, action {3}, reward {4}'.format(i_episode, t, state, action, reward))
 
             model.rewards.append(reward)
             ep_reward += reward
